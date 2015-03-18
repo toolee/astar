@@ -14,11 +14,15 @@ obstacle = 0;
 function map = map_create()
 [S,G,O,C] = map_constants;
 
+% indexing is row,col, only col, row when plotting
 map = [ C, C, C, O;
         C, O, C, O;
         C, S, C, O;
         C, O, C, G;
         ];
+
+%map = [S,C,C,G;
+%       O,O,O,O;];
 
 function [r,c] = map_get_goal_pos(map)
 [S,G,O,C] = map_constants;
@@ -53,11 +57,11 @@ function astar_execute(map)
 [goal_r,goal_c] = map_get_goal_pos(map)
 
 % draw a map base
-axis([1 ROW+1 1 COL+1])
+axis([1 COL+1 1 ROW+1])
 grid on;
 hold on;
-set(gca,'XTick',[1:1:ROW])
-set(gca,'YTick',[1:1:COL])
+set(gca,'XTick',[1:1:COL])
+set(gca,'YTick',[1:1:ROW])
 set(gca,'xaxislocation','top','ydir','reverse');
 %set(gca,'xdir','right');
 
@@ -82,6 +86,7 @@ nodes = draw_fgh_value(map,nodes);
 % empty open list
 ci=1;  % current slot in close_list
 close_list(ci) = rc2indx(ROW,COL,start_r,start_c);  % <---- this is current position
+current_hldr = plot(start_c+0.1,start_r+0.1,'r*');
 oi=1;  % current open slot in open_list
 open_list=[];
 
@@ -96,7 +101,9 @@ while keep_running
 % c-1       c+1
 %      r+1
 tmp_r = current_r - 1;
-if( tmp_r >= 1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && map(tmp_r,current_c) ~= S)
+if( tmp_r >= 1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && ...
+        map(tmp_r,current_c) ~= S && ...
+        size(find(close_list == rc2indx(ROW,COL,tmp_r,current_c)),2) == 0 )
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,tmp_r,current_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -104,7 +111,9 @@ if( tmp_r >= 1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && map(tmp_r,current
     open_list = list_unique_add(open_list,indx);
 end
 tmp_c = current_c - 1;
-if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp_c) ~= S)
+if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && ...
+        map(current_r,tmp_c) ~= S && ...
+        size(find(close_list == rc2indx(ROW,COL,current_r,tmp_c)),2) == 0 )
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,current_r,tmp_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -112,7 +121,9 @@ if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp
     open_list = list_unique_add(open_list,indx);
 end
 tmp_c = current_c + 1;
-if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp_c) ~= S)
+if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && ...
+        map(current_r,tmp_c) ~= S && ...
+        size(find(close_list == rc2indx(ROW,COL,current_r,tmp_c)),2) == 0 )
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,current_r,tmp_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -120,7 +131,9 @@ if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp
     open_list = list_unique_add(open_list,indx);
 end
 tmp_r = current_r + 1;
-if( tmp_r >=1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && map(tmp_r,current_c) ~= S)
+if( tmp_r >=1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && ...
+        map(tmp_r,current_c) ~= S && ...
+        size(find(close_list == rc2indx(ROW,COL,tmp_r,current_c)),2) == 0 )
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,tmp_r,current_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -133,46 +146,67 @@ draw_fgh_value(map,nodes);
 minv = 999999;
 size(open_list)
 for i = 1:size(open_list,2)
-  open_list(i)
-  nodes(open_list(i))
+  open_list(i);
+  nodes(open_list(i));
     if( nodes(open_list(i)).f < minv )
-        minv = nodes(open_list(i)).f
-        sm_i = i
+        minv = nodes(open_list(i)).f;
+        sm_i = i;
     end
 end
 
 % pop open list, push close list
+delete(current_hldr);
+text(nodes(close_list(ci)).c+0.2,nodes(close_list(ci)).r+0.1,'/');
 ci = ci + 1;
 close_list(ci) = open_list(sm_i);
+current_hldr = plot(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'r*');
 open_list(sm_i) = [];
 
-if ( size(open_list,2) == 0 )
+%if ( size(open_list,2) == 0 )
+if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
     keep_running = false;
 end
 
 
 end % while keep_running
 
+% traverse back
+ti = rc2indx(ROW,COL,goal_r,goal_c);
+while (nodes(ti).r ~= start_r || nodes(ti).c ~= start_c)
+    text(nodes(ti).c,nodes(ti).r,'a');
+    ti = rc2indx(ROW,COL,nodes(ti).parent_r,nodes(ti).parent_c);
+end
+
+
 
 function neighbor_node = update_neighbor(neighbor_node,current_node)
 global INIT_G_VALUE
 % if it is first time computing g (-1 value) then update it
-if ( neighbor_node.g == INIT_G_VALUE )
+if ( neighbor_node.g == INIT_G_VALUE && current_node.g == INIT_G_VALUE )
     neighbor_node.g = 10;
     neighbor_node.parent_r = current_node.r;
     neighbor_node.parent_c = current_node.c;
     neighbor_node.f = neighbor_node.g + neighbor_node.h;
-% or updated g is less also update it
-elseif ( current_node.g + 10 < neighbor_node.g )
+elseif ( neighbor_node.g ~= INIT_G_VALUE && current_node.g ~= INIT_G_VALUE )
+    if ( current_node.g + 10 < neighbor_node.g )
+        neighbor_node.g = current_node.g + 10;
+        neighbor_node.parent_r = current_node.r;
+        neighbor_node.parent_c = current_node.c;
+        neighbor_node.f = neighbor_node.g + neighbor_node.h;
+    end
+elseif ( neighbor_node.g == INIT_G_VALUE )
     neighbor_node.g = current_node.g + 10;
     neighbor_node.parent_r = current_node.r;
     neighbor_node.parent_c = current_node.c;
     neighbor_node.f = neighbor_node.g + neighbor_node.h;
+% or updated g is less also update it
+elseif ( current_node.g == INIT_G_VALUE )
+    display('bug');
 end
 
 function list = list_unique_add(list,value)
-if( size(find(list == value)) == 0 )
-    i = size(list)+1;
+if( size(find(list == value),2) == 0 )
+    i = size(list,2)+1;
     list(i) = value;
 end
 
