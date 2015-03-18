@@ -1,5 +1,6 @@
 function run_astar
 dbstop if error;
+global VISIT_ALL_NODES; VISIT_ALL_NODES = 0;
 map = map_create();
 astar_execute(map);
 
@@ -15,17 +16,17 @@ obstacle = 0;
 function map = map_create()
 [S,G,O,C] = map_constants;
 
-if 0
-map = [ C, C, C, O;
-        C, O, C, O;
-        C, S, C, O;
-        C, O, C, G;
+small_map = ...
+      [ C, C, C, C;
+        C, O, O, C;
+        C, S, O, C;
+        C, O, O, G;
         ];
-end
     
 % indexing is row,col, only col, row when plotting
-if 1
-map = [ C, C, C, C, O, C, C, C, C, C;
+
+large_map = ...
+      [ C, C, C, C, O, C, C, C, C, C;
         C, O, O, C, O, C, C, C, C, C;
         C, S, O, C, O, C, C, C, C, C;
         C, O, O, C, O, C, C, C, C, C;
@@ -33,13 +34,24 @@ map = [ C, C, C, C, O, C, C, C, C, C;
         C, C, C, C, C, C, C, C, O, C;
         C, C, C, C, C, C, C, C, O, C;
         O, O, O, O, O, O, O, O, O, C;
-        C, C, C, C, C, C, C, C, G, C;
         C, C, C, C, C, C, C, C, C, C;
+        G, C, C, C, C, C, C, C, C, C;
         ];
-end
+    
+no_path_large_map = ...
+      [ C, C, C, C, O, C, C, C, C, C;
+        C, O, O, C, O, C, C, C, C, C;
+        C, S, O, C, O, C, C, C, C, C;
+        C, O, O, C, O, C, C, C, C, C;
+        C, C, C, C, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, O, C;
+        O, O, O, O, O, O, O, O, O, O;
+        C, C, C, C, C, C, C, C, C, C;
+        G, C, C, C, C, C, C, C, C, C;
+        ];
 
-%map = [S,C,C,G;
-%       O,O,O,O;];
+map = large_map;
 
 function [r,c] = map_get_goal_pos(map)
 [S,G,O,C] = map_constants;
@@ -67,6 +79,7 @@ end
 % astar
 %--------------------------------------------------------------------------
 function astar_execute(map)
+global VISIT_ALL_NODES;
 
 [S,G,O,C] = map_constants;
 [ROW,COL] = size(map);
@@ -172,19 +185,26 @@ end
 
 % pop open list, push close list
 delete(current_hldr);
-text(nodes(close_list(ci)).c+0.2,nodes(close_list(ci)).r+0.1,'/');
+text(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'/');
 ci = ci + 1;
 close_list(ci) = open_list(sm_i);
 current_hldr = plot(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'r*');
 open_list(sm_i) = [];
 
-%if ( size(open_list,2) == 0 )
-%if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
 
-% If it has visited all the clearpath nodes and goal node, it can start 
-% traversing.
-if( ci == ROW*COL - 1 - size(find(map == O),1) )
-    keep_running = false;
+%-------------------------------------------------------
+% STOP condition
+% when goal is reached or
+% visits all nodes
+%-------------------------------------------------------
+if( VISIT_ALL_NODES )
+    if( ci > ROW*COL - 1 - size(find(map == O),1) )
+        keep_running = false;
+    end
+else
+    if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
+        keep_running = false;
+    end
 end
 
 pause(0.1);
@@ -193,6 +213,10 @@ end % while keep_running
 
 % traverse back
 ti = rc2indx(ROW,COL,goal_r,goal_c);
+if( nodes(ti).parent_r == 0 || nodes(ti).parent_c == 0 )
+    display('no path');
+    return;
+end
 while (nodes(ti).r ~= start_r || nodes(ti).c ~= start_c)
     if( nodes(ti).c > nodes(ti).parent_c )
         xx = [nodes(ti).parent_c+0.5 nodes(ti).c+0.5];
