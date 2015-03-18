@@ -80,14 +80,14 @@ nodes = draw_fgh_value(map,nodes);
 
 % initialize close list with start position
 % empty open list
-ci=1;  % current open slot in close_list
+ci=1;  % current slot in close_list
 close_list(ci) = rc2indx(ROW,COL,start_r,start_c);  % <---- this is current position
 oi=1;  % current open slot in open_list
 open_list=[];
 
 % for loop start here
 keep_running = true;
-if keep_running
+while keep_running
 
 
 % find surrounding nodes (max 4), and put them in open list
@@ -96,7 +96,7 @@ if keep_running
 % c-1       c+1
 %      r+1
 tmp_r = current_r - 1;
-if( tmp_r >= 1 && tmp_r <= ROW )
+if( tmp_r >= 1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && map(tmp_r,current_c) ~= S)
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,tmp_r,current_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -104,7 +104,7 @@ if( tmp_r >= 1 && tmp_r <= ROW )
     open_list = list_unique_add(open_list,indx);
 end
 tmp_c = current_c - 1;
-if( tmp_c >= 1 && tmp_c <= COL )
+if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp_c) ~= S)
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,current_r,tmp_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -112,7 +112,7 @@ if( tmp_c >= 1 && tmp_c <= COL )
     open_list = list_unique_add(open_list,indx);
 end
 tmp_c = current_c + 1;
-if( tmp_c >= 1 && tmp_c <= COL )
+if( tmp_c >= 1 && tmp_c <= COL && map(current_r,tmp_c) ~= O && map(current_r,tmp_c) ~= S)
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,current_r,tmp_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -120,7 +120,7 @@ if( tmp_c >= 1 && tmp_c <= COL )
     open_list = list_unique_add(open_list,indx);
 end
 tmp_r = current_r + 1;
-if( tmp_r >=1 && tmp_r <= ROW )
+if( tmp_r >=1 && tmp_r <= ROW && map(tmp_r,current_c) ~= O && map(tmp_r,current_c) ~= S)
     % update neighboring nodes' g value if it is smaller
     indx = rc2indx(ROW,COL,tmp_r,current_c);
     nodes(indx) = update_neighbor(nodes(indx),nodes(close_list(ci)));
@@ -140,6 +140,16 @@ for i = 1:size(open_list,2)
         sm_i = i
     end
 end
+
+% pop open list, push close list
+ci = ci + 1;
+close_list(ci) = open_list(sm_i);
+open_list(sm_i) = [];
+
+if ( size(open_list,2) == 0 )
+    keep_running = false;
+end
+
 
 end % while keep_running
 
