@@ -9,9 +9,9 @@ goal = 8;
 clearpath = 1;
 obstacle = 0;
 
-%------------------------------------------------
+%--------------------------------------------------------------------------
 % map
-%------------------------------------------------
+%--------------------------------------------------------------------------
 function map = map_create()
 [S,G,O,C] = map_constants;
 
@@ -29,9 +29,9 @@ function [r,c] = map_get_start_pos(map)
 [S,G,O,C] = map_constants;
 [r,c] = find(map == S);
 
-%------------------------------------------------
+%--------------------------------------------------------------------------
 % util
-%------------------------------------------------
+%--------------------------------------------------------------------------
 function index = rc2indx(ROW,COL,r,c)
 index = (r-1)*COL+c;
 
@@ -43,9 +43,9 @@ if( c == 0 )
 end
 
 
-%------------------------------------------------
+%--------------------------------------------------------------------------
 % astar
-%------------------------------------------------
+%--------------------------------------------------------------------------
 function astar_execute(map)
 
 [S,G,O,C] = map_constants;
@@ -53,6 +53,7 @@ function astar_execute(map)
 [start_r,start_c] = map_get_start_pos(map);
 [goal_r,goal_c] = map_get_goal_pos(map);
 
+% draw a map base
 axis([1 ROW+1 1 COL+1])
 grid on;
 hold on;
@@ -81,16 +82,37 @@ end
 
 % initialize close list with start position
 % empty open list
-ci=1;
+ci=1;  % current open slot in close_list
 close_list(ci) = rc2indx(ROW,COL,start_r,start_c);  % <---- this is current position
+oi=1;  % current open slot in open_list
 open_list=[];
 
 % find surrounding nodes (max 4), and put them in open list
 [current_r,current_c] = indx2rc(ROW,COL,close_list(ci));
+%      r-1
+% c-1       c+1
+%      r+1
+tmp_r = current_r - 1;
+if( tmp_r >= 1 && tmp_r <= ROW )
+    open_list(oi) = rc2indx(ROW,COL,tmp_r,current_c);
+    oi = oi + 1;
+end
+tmp_c = current_c - 1;
+if( tmp_c >= 1 && tmp_c <= COL )
+    open_list(oi) = rc2indx(ROW,COL,current_r,tmp_c);
+    oi = oi + 1;
+end
+tmp_c = current_c + 1;
+if( tmp_c >= 1 && tmp_c <= COL )
+    open_list(oi) = rc2indx(ROW,COL,current_r,tmp_c);
+    oi = oi + 1;
+end
+tmp_r = current_r + 1;
+if( tmp_r >=1 && tmp_r <= ROW )
+    open_list(oi) = rc2indx(ROW,COL,tmp_r,current_c);
+    oi = oi + 1;
+end
 
-
-
-% compute g and f values
 
 % find smallest f value
 
