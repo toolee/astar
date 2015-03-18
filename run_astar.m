@@ -85,6 +85,9 @@ oi=1;  % current open slot in open_list
 open_list=[];
 
 % for loop start here
+keep_running = true;
+while keep_running
+
 
 % find surrounding nodes (max 4), and put them in open list
 [current_r,current_c] = indx2rc(ROW,COL,close_list(ci));
@@ -126,6 +129,17 @@ end
 draw_fgh_value(map,nodes);
 
 % find smallest f value
+minv = 999999;
+for i = 1:size(open_list)
+    if( nodes(open_list(i)).f < minv )
+        minv = nodes(open_list(i)).f;
+        sm_i = i;
+    end
+end
+
+
+end % while keep_running
+
 
 function neighbor_node = update_neighbor(neighbor_node,current_node)
 global INIT_G_VALUE
