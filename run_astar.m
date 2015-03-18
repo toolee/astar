@@ -1,4 +1,5 @@
 function run_astar
+dbstop if error;
 map = map_create();
 astar_execute(map);
 
@@ -14,12 +15,28 @@ obstacle = 0;
 function map = map_create()
 [S,G,O,C] = map_constants;
 
-% indexing is row,col, only col, row when plotting
+if 0
 map = [ C, C, C, O;
         C, O, C, O;
         C, S, C, O;
         C, O, C, G;
         ];
+end
+    
+% indexing is row,col, only col, row when plotting
+if 1
+map = [ C, C, C, C, O, C, C, C, C, C;
+        C, O, O, C, O, C, C, C, C, C;
+        C, S, O, C, O, C, C, C, C, C;
+        C, O, O, C, O, C, C, C, C, C;
+        C, C, C, C, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, O, C;
+        O, O, O, O, O, O, O, O, O, C;
+        C, C, C, C, C, C, C, C, G, C;
+        C, C, C, C, C, C, C, C, C, C;
+        ];
+end
 
 %map = [S,C,C,G;
 %       O,O,O,O;];
@@ -52,16 +69,16 @@ end
 function astar_execute(map)
 
 [S,G,O,C] = map_constants;
-[ROW,COL] = size(map)
-[start_r,start_c] = map_get_start_pos(map)
-[goal_r,goal_c] = map_get_goal_pos(map)
+[ROW,COL] = size(map);
+[start_r,start_c] = map_get_start_pos(map);
+[goal_r,goal_c] = map_get_goal_pos(map);
 
 % draw a map base
-axis([1 COL+1 1 ROW+1])
+axis([1 COL+1 1 ROW+1]);
 grid on;
 hold on;
-set(gca,'XTick',[1:1:COL])
-set(gca,'YTick',[1:1:ROW])
+set(gca,'XTick',[1:1:COL]);
+set(gca,'YTick',[1:1:ROW]);
 set(gca,'xaxislocation','top','ydir','reverse');
 %set(gca,'xdir','right');
 
@@ -144,7 +161,6 @@ draw_fgh_value(map,nodes);
 
 % find smallest f value
 minv = 999999;
-size(open_list)
 for i = 1:size(open_list,2)
   open_list(i);
   nodes(open_list(i));
@@ -163,39 +179,57 @@ current_hldr = plot(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'r*'
 open_list(sm_i) = [];
 
 %if ( size(open_list,2) == 0 )
-if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
+%if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
+
+% If it has visited all the clearpath nodes and goal node, it can start 
+% traversing.
+if( ci == ROW*COL - 1 - size(find(map == O),1) )
     keep_running = false;
 end
 
+pause(0.1);
 
 end % while keep_running
 
 % traverse back
 ti = rc2indx(ROW,COL,goal_r,goal_c);
 while (nodes(ti).r ~= start_r || nodes(ti).c ~= start_c)
-    text(nodes(ti).c,nodes(ti).r,'a');
+    if( nodes(ti).c > nodes(ti).parent_c )
+        xx = [nodes(ti).parent_c+0.5 nodes(ti).c+0.5];
+    else
+        xx = [nodes(ti).c+0.5 nodes(ti).parent_c+0.5];
+    end
+    if( nodes(ti).r > nodes(ti).parent_r )
+        yy = [nodes(ti).parent_r+0.5 nodes(ti).r+0.5];
+    else
+        yy = [nodes(ti).r+0.5 nodes(ti).parent_r+0.5];
+    end
+    plot(xx,yy);
     ti = rc2indx(ROW,COL,nodes(ti).parent_r,nodes(ti).parent_c);
+    pause(0.5);
 end
 
 
 
 function neighbor_node = update_neighbor(neighbor_node,current_node)
 global INIT_G_VALUE
+global G_COST
+G_COST = 1;
 % if it is first time computing g (-1 value) then update it
 if ( neighbor_node.g == INIT_G_VALUE && current_node.g == INIT_G_VALUE )
-    neighbor_node.g = 10;
+    neighbor_node.g = G_COST;
     neighbor_node.parent_r = current_node.r;
     neighbor_node.parent_c = current_node.c;
     neighbor_node.f = neighbor_node.g + neighbor_node.h;
 elseif ( neighbor_node.g ~= INIT_G_VALUE && current_node.g ~= INIT_G_VALUE )
-    if ( current_node.g + 10 < neighbor_node.g )
-        neighbor_node.g = current_node.g + 10;
+    if ( current_node.g + G_COST < neighbor_node.g )
+        neighbor_node.g = current_node.g + G_COST;
         neighbor_node.parent_r = current_node.r;
         neighbor_node.parent_c = current_node.c;
         neighbor_node.f = neighbor_node.g + neighbor_node.h;
     end
 elseif ( neighbor_node.g == INIT_G_VALUE )
-    neighbor_node.g = current_node.g + 10;
+    neighbor_node.g = current_node.g + G_COST;
     neighbor_node.parent_r = current_node.r;
     neighbor_node.parent_c = current_node.c;
     neighbor_node.f = neighbor_node.g + neighbor_node.h;
@@ -270,7 +304,7 @@ function nodes = astar_compute_h(map)
 
 nodes(ROW*COL) = struct('r',[],'c',[],'h',[],'g',[],'f',[], ...
     'parent_r',[],'parent_c',[],'h_hldr',[],'g_hldr',[],'f_hldr',[],...
-    'arrow_hldr',[])
+    'arrow_hldr',[]);
 
 [goal_r,goal_c] = find(map==G);
 
