@@ -1,6 +1,5 @@
 function run_astar
 map = map_create();
-
 astar_execute(map);
 
 function [start,goal,obstacle,clearpath]=map_constants()
@@ -49,9 +48,9 @@ end
 function astar_execute(map)
 
 [S,G,O,C] = map_constants;
-[ROW,COL] = size(map);
-[start_r,start_c] = map_get_start_pos(map);
-[goal_r,goal_c] = map_get_goal_pos(map);
+[ROW,COL] = size(map)
+[start_r,start_c] = map_get_start_pos(map)
+[goal_r,goal_c] = map_get_goal_pos(map)
 
 % draw a map base
 axis([1 ROW+1 1 COL+1])
@@ -59,14 +58,16 @@ grid on;
 hold on;
 set(gca,'XTick',[1:1:ROW])
 set(gca,'YTick',[1:1:COL])
+set(gca,'xaxislocation','top','ydir','reverse');
+%set(gca,'xdir','right');
 
 % plot start, goal, obstacles
-plot(start_r+0.5,start_c+0.5,'ro');
-plot(goal_r+0.5,goal_c+0.5,'go');
+plot(start_c+0.5,start_r+0.5,'ro');
+plot(goal_c+0.5,goal_r+0.5,'go');
 for ri = 1:ROW
     for ci = 1:COL
         if(map(ri,ci)==O) % if it is a obstacle draw it
-            plot(ri+0.5,ci+0.5,'kx');
+            plot(ci+0.5,ri+0.5,'kx');
         end
     end
 end
@@ -86,7 +87,7 @@ open_list=[];
 
 % for loop start here
 keep_running = true;
-while keep_running
+if keep_running
 
 
 % find surrounding nodes (max 4), and put them in open list
@@ -130,13 +131,15 @@ draw_fgh_value(map,nodes);
 
 % find smallest f value
 minv = 999999;
-for i = 1:size(open_list)
+size(open_list)
+for i = 1:size(open_list,2)
+  open_list(i)
+  nodes(open_list(i))
     if( nodes(open_list(i)).f < minv )
-        minv = nodes(open_list(i)).f;
-        sm_i = i;
+        minv = nodes(open_list(i)).f
+        sm_i = i
     end
 end
-
 
 end % while keep_running
 
@@ -176,14 +179,14 @@ for ni = 1:size(nodes,2)
         % draw f = g + h
         s = sprintf('%0.2f',nodes(ni).h);
         if( nodes(ni).h_hldr == 0 )
-            nodes(ni).h_hldr = text(nodes(ni).r+0.8,nodes(ni).c+0.9,s);
+            nodes(ni).h_hldr = text(nodes(ni).c+0.8,nodes(ni).r+0.9,s);
         else
             set(nodes(ni).h_hldr,'String',s);
         end
         if( nodes(ni).g ~= INIT_G_VALUE )
             s = sprintf('%0.2f',nodes(ni).g);
             if( nodes(ni).g_hldr == 0 )
-                nodes(ni).g_hldr = text(nodes(ni).r+0.45,nodes(ni).c+0.9,s);
+                nodes(ni).g_hldr = text(nodes(ni).c+0.45,nodes(ni).r+0.9,s);
             else
                 set(nodes(ni).g_hldr,'String',s);
             end
@@ -191,7 +194,7 @@ for ni = 1:size(nodes,2)
         if( nodes(ni).f ~= INIT_F_VALUE )
             s = sprintf('%0.2f',nodes(ni).f);
             if( nodes(ni).f_hldr == 0 )
-                nodes(ni).f_hldr = text(nodes(ni).r+0.1,nodes(ni).c+0.9,s);
+                nodes(ni).f_hldr = text(nodes(ni).c+0.1,nodes(ni).r+0.9,s);
             else
                 set(nodes(ni).f_hldr,'String',s);
             end
@@ -200,17 +203,17 @@ for ni = 1:size(nodes,2)
         % draw arrow
         update_arrow = false;
         if( 0 < nodes(ni).r+1 && nodes(ni).r+1 == nodes(ni).parent_r && nodes(ni).r+1 < ROW )
-            s = '<'; update_arrow = true;
-        elseif( 0 < nodes(ni).r-1 && nodes(ni).r-1 == nodes(ni).parent_r && nodes(ni).r-1 < ROW )
-            s = '>'; update_arrow = true;
-        elseif( 0 < nodes(ni).c+1 && nodes(ni).c+1 == nodes(ni).parent_c && nodes(ni).c+1 < COL )
-            s = '\^'; update_arrow = true;
-        elseif( 0 < nodes(ni).c-1 && nodes(ni).c-1 == nodes(ni).parent_c && nodes(ni).c-1 < COL )
             s = 'v'; update_arrow = true;
+        elseif( 0 < nodes(ni).r-1 && nodes(ni).r-1 == nodes(ni).parent_r && nodes(ni).r-1 < ROW )
+            s = '\^'; update_arrow = true;
+        elseif( 0 < nodes(ni).c+1 && nodes(ni).c+1 == nodes(ni).parent_c && nodes(ni).c+1 < COL )
+            s = '>'; update_arrow = true;
+        elseif( 0 < nodes(ni).c-1 && nodes(ni).c-1 == nodes(ni).parent_c && nodes(ni).c-1 < COL )
+            s = '<'; update_arrow = true;
         end
         if( update_arrow )
             if( nodes(ni).arrow_hldr == 0 )
-                nodes(ni).arrow_hldr = text(nodes(ni).r+0.6,nodes(ni).c+0.45,s);
+                nodes(ni).arrow_hldr = text(nodes(ni).c+0.6,nodes(ni).r+0.45,s);
             else
                 set(nodes(ni).arrow_hldr,'String',s);
             end
