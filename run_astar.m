@@ -1,6 +1,9 @@
 function run_astar
+clc;
+clear all;
+close all;
 dbstop if error;
-global VISIT_ALL_NODES; VISIT_ALL_NODES = 0;
+global VISIT_ALL_NODES; VISIT_ALL_NODES = 1;
 map = map_create();
 astar_execute(map);
 
@@ -21,6 +24,13 @@ small_map = ...
         C, O, O, C;
         C, S, O, C;
         C, O, O, G;
+        ];
+    
+small_map2 = ...
+      [ C, C, C, C;
+        C, O, G, O;
+        C, O, O, O;
+        C, C, S, C;
         ];
     
 % indexing is row,col, only col, row when plotting
@@ -185,10 +195,10 @@ end
 
 % pop open list, push close list
 delete(current_hldr);
-text(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'/');
+text(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'/');
 ci = ci + 1;
 close_list(ci) = open_list(sm_i);
-current_hldr = plot(nodes(close_list(ci)).c+0.1,nodes(close_list(ci)).r+0.1,'r*');
+current_hldr = plot(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'r*');
 open_list(sm_i) = [];
 
 
@@ -200,10 +210,14 @@ open_list(sm_i) = [];
 if( VISIT_ALL_NODES )
     if( ci > ROW*COL - 1 - size(find(map == O),1) )
         keep_running = false;
+        delete(current_hldr);
+        text(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'/');
     end
 else
     if ( map(nodes(close_list(ci)).r,nodes(close_list(ci)).c) == G )
         keep_running = false;
+        delete(current_hldr);
+        text(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'/');
     end
 end
 
@@ -281,14 +295,14 @@ for ni = 1:size(nodes,2)
         % draw f = g + h
         s = sprintf('%0.2f',nodes(ni).h);
         if( nodes(ni).h_hldr == 0 )
-            nodes(ni).h_hldr = text(nodes(ni).c+0.8,nodes(ni).r+0.9,s);
+            nodes(ni).h_hldr = text(nodes(ni).c+0.8,nodes(ni).r+0.1,s);
         else
             set(nodes(ni).h_hldr,'String',s);
         end
         if( nodes(ni).g ~= INIT_G_VALUE )
             s = sprintf('%0.2f',nodes(ni).g);
             if( nodes(ni).g_hldr == 0 )
-                nodes(ni).g_hldr = text(nodes(ni).c+0.45,nodes(ni).r+0.9,s);
+                nodes(ni).g_hldr = text(nodes(ni).c+0.45,nodes(ni).r+0.1,s);
             else
                 set(nodes(ni).g_hldr,'String',s);
             end
@@ -296,7 +310,7 @@ for ni = 1:size(nodes,2)
         if( nodes(ni).f ~= INIT_F_VALUE )
             s = sprintf('%0.2f',nodes(ni).f);
             if( nodes(ni).f_hldr == 0 )
-                nodes(ni).f_hldr = text(nodes(ni).c+0.1,nodes(ni).r+0.9,s);
+                nodes(ni).f_hldr = text(nodes(ni).c+0.1,nodes(ni).r+0.1,s);
             else
                 set(nodes(ni).f_hldr,'String',s);
             end
@@ -315,7 +329,7 @@ for ni = 1:size(nodes,2)
         end
         if( update_arrow )
             if( nodes(ni).arrow_hldr == 0 )
-                nodes(ni).arrow_hldr = text(nodes(ni).c+0.6,nodes(ni).r+0.45,s);
+                nodes(ni).arrow_hldr = text(nodes(ni).c+0.05,nodes(ni).r+0.1,s);
             else
                 set(nodes(ni).arrow_hldr,'String',s);
             end
