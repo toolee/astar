@@ -72,7 +72,7 @@ no_path_large_map = ...
         G, C, C, C, C, C, C, C, C, C;
         ];
 
-map = large_map2;
+map = large_map;
 
 function [r,c] = map_get_goal_pos(map)
 [S,G,O,C] = map_constants;
@@ -379,3 +379,7 @@ for r = 1:ROW
           n = n+1;
   end
 end
+
+% improvement
+% convert to node base to avoid unnecessary r,c to node index conversion
+% keep sorted open_list for performance
