@@ -47,7 +47,18 @@ large_map = ...
         C, C, C, C, C, C, C, C, C, C;
         G, C, C, C, C, C, C, C, C, C;
         ];
-    
+large_map2 = ...
+      [ S, C, C, C, O, C, C, C, C, C;
+        O, O, O, C, C, C, O, O, O, C;
+        G, O, C, O, O, C, O, C, C, C;
+        C, O, O, C, O, C, O, C, C, C;
+        C, O, C, C, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, O, C;
+        O, O, C, O, C, C, C, C, O, C;
+        C, C, C, C, C, C, C, C, C, C;
+        C, C, C, C, C, C, C, C, C, C;
+        C, C, C, C, C, C, C, C, C, C;
+        ];
 no_path_large_map = ...
       [ C, C, C, C, O, C, C, C, C, C;
         C, O, O, C, O, C, C, C, C, C;
@@ -61,7 +72,7 @@ no_path_large_map = ...
         G, C, C, C, C, C, C, C, C, C;
         ];
 
-map = large_map;
+map = large_map2;
 
 function [r,c] = map_get_goal_pos(map)
 [S,G,O,C] = map_constants;
