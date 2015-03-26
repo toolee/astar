@@ -1,9 +1,10 @@
 function run_astar
-clc;
-clear all;
-close all;
+clc; clear all; close all;
 dbstop if error;
+
 global VISIT_ALL_NODES; VISIT_ALL_NODES = 1;
+display(sprintf('INFO: visit all nodes %d',VISIT_ALL_NODES));
+
 map = map_create();
 astar_execute(map);
 
