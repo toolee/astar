@@ -4,6 +4,8 @@ dbstop if error;
 
 global VISIT_ALL_NODES; VISIT_ALL_NODES = 1;
 display(sprintf('INFO: visit all nodes %d',VISIT_ALL_NODES));
+global G_COST;          G_COST = 1;
+display(sprintf('INFO: movement cost %d',G_COST));
 
 map = map_create();
 astar_execute(map);
@@ -44,7 +46,7 @@ large_map = ...
         C, C, C, C, C, C, C, C, O, C;
         C, C, C, C, C, C, C, C, O, C;
         C, C, C, C, C, C, C, C, O, C;
-        O, O, O, O, O, O, O, O, O, C;
+        O, O, O, C, O, O, O, O, O, C;
         C, C, C, C, C, C, C, C, C, C;
         G, C, C, C, C, C, C, C, C, C;
         ];
@@ -73,7 +75,7 @@ no_path_large_map = ...
         G, C, C, C, C, C, C, C, C, C;
         ];
 
-map = large_map;
+map = no_path_large_map;
 
 function [r,c] = map_get_goal_pos(map)
 [S,G,O,C] = map_constants;
@@ -208,10 +210,14 @@ end
 % pop open list, push close list
 delete(current_hldr);
 text(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'/');
-ci = ci + 1;
-close_list(ci) = open_list(sm_i);
-current_hldr = plot(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'r*');
-open_list(sm_i) = [];
+if( ~isempty(open_list) )
+  ci = ci + 1;
+  close_list(ci) = open_list(sm_i);
+  current_hldr = plot(nodes(close_list(ci)).c+0.01,nodes(close_list(ci)).r+0.1,'r*');
+  open_list(sm_i) = [];
+else
+  keep_running = false;
+end
 
 
 %-------------------------------------------------------
@@ -219,7 +225,7 @@ open_list(sm_i) = [];
 % when goal is reached or
 % visits all nodes
 %-------------------------------------------------------
-if( VISIT_ALL_NODES )
+if( VISIT_ALL_NODES && keep_running )
     if( ci > ROW*COL - 1 - size(find(map == O),1) )
         keep_running = false;
         delete(current_hldr);
@@ -264,7 +270,7 @@ end
 function neighbor_node = update_neighbor(neighbor_node,current_node)
 global INIT_G_VALUE
 global G_COST
-G_COST = 1;
+
 % if it is first time computing g (-1 value) then update it
 if ( neighbor_node.g == INIT_G_VALUE && current_node.g == INIT_G_VALUE )
     neighbor_node.g = G_COST;
