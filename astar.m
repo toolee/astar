@@ -1,4 +1,4 @@
-function run_astar
+function astar
 clc; clear all; close all;
 dbstop if error;
 
